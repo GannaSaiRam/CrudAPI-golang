@@ -72,7 +72,7 @@ Likewise userserver, this talks with mongoserver via grpc calls instead of rest 
 The port this runs on is 7007.
 ```
 	go run cliclient/main/main.go --serv_addr localhost:7007 -login -loginuser username1 -loginpass password1
-	# (Use the jwtkey generated and put as value in a accessToken variable in cliclient/main/main.go)
+	# (Use the jwtkey generated and put as value in a -access flag)
 	go run cliclient/main/main.go -insert -addressline1 addr1 -addressline2 addr2 -city c -state s -country count -zipcode z --serv_addr localhost:7007 -product "{}" -access <token>
 	go run cliclient/main/main.go --serv_addr localhost:7007 -update -addressline1 ad1 -product '{"category":"cat", "object": "obj1"}' -uid <uid> -access <token>
 	go run cliclient/main/main.go --serv_addr localhost:7007 -delete -uid <uid> -access <token>
