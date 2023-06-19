@@ -1,0 +1,7 @@
+bin/
+mongodb/
+grpcapi copy/
+localtesting/
+.vscode/
+cliserver/
+grpcapi/*.pb.go

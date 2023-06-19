@@ -1,0 +1,35 @@
+syntax = "proto3";
+package grpcapi;
+option go_package = "grpcapi/grpcapi";
+
+message NoParam {}
+
+enum Action {
+    Action_UNKNOWN = 0;
+    INSERT = 1;
+    UPDATE = 2;
+    DELETE = 3;
+}
+
+message UidParam {
+    string Uid = 1;
+    Action action = 2;
+}
+
+message LoginReq {
+    string Username = 1;
+    string Password = 2;
+}
+
+message LoginRes {
+    string AccessToken = 1;
+}
+
+message Address {
+    string Addressline1 = 1;
+    string Addressline2 = 2;
+    string City = 3;
+    string State = 4;
+    string ZipCode = 5;
+    string Country = 6;
+}

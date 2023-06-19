@@ -1,0 +1,22 @@
+syntax = "proto3";
+package grpcapi;
+option go_package = "grpcapi/grpcapi";
+
+import "common.proto";
+
+service UserService {
+    rpc Login(LoginReq) returns (LoginRes);
+    rpc InsertUser(UserMessage) returns (UidParam);
+    rpc UpdateUser(UserMessage) returns (NoParam);
+    rpc GetUser(UidParam) returns (UserMessage);
+}
+
+message UserMessage {
+    string Uid = 1;
+    string Username = 2;
+    string PhoneNumber =3;
+    int64 Age = 4;
+    float Height = 5;
+    string Email = 6;
+    Address Address = 7;
+}

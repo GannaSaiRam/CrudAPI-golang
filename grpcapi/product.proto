@@ -1,0 +1,19 @@
+syntax = "proto3";
+package grpcapi;
+
+import "common.proto";
+
+option go_package = "grpcapi/grpcapi";
+
+service ProductService {
+    rpc Login(LoginReq) returns (LoginRes);
+    rpc InsertProduct(ProductMessage) returns (UidParam);
+    rpc UpdateProduct(ProductMessage) returns (UidParam);
+    rpc DeleteProduct(UidParam) returns (UidParam);
+}
+message ProductMessage {
+    string uid = 1;
+    Address source = 2;
+    bytes productInfo = 3;
+    Action action = 4;
+}
