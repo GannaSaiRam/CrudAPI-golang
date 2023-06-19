@@ -11,6 +11,7 @@ service ProductService {
     rpc UpdateProduct(ProductMessage) returns (UidParam);
     rpc DeleteProduct(UidParam) returns (UidParam);
 }
+
 message ProductMessage {
     string uid = 1;
     Address source = 2;

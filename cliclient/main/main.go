@@ -17,7 +17,7 @@ import (
 
 var (
 	data        string
-	accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXJuYW1lMSIsImV4cCI6MTY4NjkyMjQ3MH0.q83kqePx2azRLuvPQt1I7i9RRKSWFeiBeJpHugSvnuA"
+	accessToken string
 
 	login     bool
 	loginuser string
@@ -48,6 +48,7 @@ func init() {
 	flag.BoolVar(&update, "update", false, "Update user")
 	flag.BoolVar(&delete, "delete", false, "Get the user info")
 
+	flag.StringVar(&accessToken, "access", "", "Access token to run the commands")
 	flag.StringVar(&loginuser, "loginuser", "", "Username to login")
 	flag.StringVar(&loginpass, "loginpass", "", "Password to login")
 
