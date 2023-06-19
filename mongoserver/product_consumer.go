@@ -12,6 +12,7 @@ import (
 
 	"github.com/segmentio/kafka-go"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -25,14 +26,20 @@ type messageGrpcApi interface {
 }
 
 func prodMessageParse(message []byte) (*grpcapi.ProductMessage, error) {
-	var crudProductMessage grpcapi.ProductMessage
-	err := protojson.Unmarshal(message, &crudProductMessage)
+	var (
+		err                error
+		crudProductMessage grpcapi.ProductMessage
+	)
+	err = protojson.Unmarshal(message, &crudProductMessage)
 	return &crudProductMessage, err
 }
 
 func prodUidParse(message []byte) (*grpcapi.UidParam, error) {
-	var crudProductMessage grpcapi.UidParam
-	err := protojson.Unmarshal(message, &crudProductMessage)
+	var (
+		err                error
+		crudProductMessage grpcapi.UidParam
+	)
+	err = protojson.Unmarshal(message, &crudProductMessage)
 	return &crudProductMessage, err
 }
 
@@ -50,6 +57,8 @@ func ProdConsume(kafkaAddr, mongoUri string) {
 		kafkaCtx  = context.TODO()
 		bsonobj1  *grpcapi.ProductMessage
 		bsonobj2  *grpcapi.UidParam
+		filter    primitive.D
+		update    primitive.M
 	)
 	r = kafka.NewReader(kafka.ReaderConfig{
 		Brokers: strings.Split(kafkaAddr, ","),
@@ -98,26 +107,26 @@ func ProdConsume(kafkaAddr, mongoUri string) {
 		}
 		log.Printf("%+v, %+v", bsonobj1, bsonobj2)
 		if bsonobj1 != nil && bsonobj1.GetAction() == grpcapi.Action_INSERT {
-			_, err := col.InsertOne(MongoConnection.Ctx, bsonobj1)
+			_, err = col.InsertOne(MongoConnection.Ctx, bsonobj1)
 			if err != nil {
 				log.Printf("Insertion failed: %v", err)
 			}
 		} else if bsonobj1 != nil && bsonobj1.GetAction() == grpcapi.Action_UPDATE {
-			filter := bson.D{{Key: "uid", Value: bsonobj1.GetUid()}}
-			update := bson.M{
+			filter = bson.D{{Key: "uid", Value: bsonobj1.GetUid()}}
+			update = bson.M{
 				"$set": bson.M{
 					"source":      bsonobj1.GetSource(),
 					"productinfo": bsonobj1.GetProductInfo(),
 				},
 			}
-			_, err := col.UpdateOne(MongoConnection.Ctx, filter, update)
+			_, err = col.UpdateOne(MongoConnection.Ctx, filter, update)
 			if err != nil {
 				log.Printf("Updation failed: %v", err)
 			}
 		} else if bsonobj2 != nil && bsonobj2.Action == grpcapi.Action_DELETE {
-			filter := bson.D{{Key: "uid", Value: bsonobj2.GetUid()}}
+			filter = bson.D{{Key: "uid", Value: bsonobj2.GetUid()}}
 			log.Println(filter)
-			_, err := col.DeleteOne(MongoConnection.Ctx, filter)
+			_, err = col.DeleteOne(MongoConnection.Ctx, filter)
 			if err != nil {
 				log.Printf("Deletion failed: %v", err)
 			}

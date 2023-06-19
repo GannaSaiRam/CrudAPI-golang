@@ -21,9 +21,10 @@ func main() {
 	var (
 		err    error
 		router *mux.Router
+		cancel context.CancelFunc
 	)
 	flag.Parse()
-	cancel := mongoserver.MongoConn(*mongoUri)
+	cancel = mongoserver.MongoConn(*mongoUri)
 	defer cancel()
 	defer mongoserver.Close(mongoserver.MongoConnection.Client, context.TODO())
 	go mongoserver.UserConsume(context.TODO(), *kafka, *mongoUri)

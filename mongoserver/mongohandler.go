@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -22,9 +23,10 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		username  string
 		col       *mongo.Collection
 		credBytes []byte
+		filter    primitive.D
 	)
 	username = mux.Vars(r)["username"]
-	filter := bson.D{{Key: "user", Value: username}}
+	filter = bson.D{{Key: "user", Value: username}}
 	col = MongoConnection.Client.Database(consts.DATABASE).Collection(consts.LoginUser)
 	var cred Credentials
 	err = col.FindOne(MongoConnection.Ctx, filter).Decode(&cred)
@@ -54,9 +56,10 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		uid       string
 		col       *mongo.Collection
 		userBytes []byte
+		filter    primitive.D
 	)
 	uid = mux.Vars(r)["uid"]
-	filter := bson.D{{Key: "uid", Value: uid}}
+	filter = bson.D{{Key: "uid", Value: uid}}
 	col = MongoConnection.Client.Database(consts.DATABASE).Collection(consts.UserCollection)
 	err = col.FindOne(MongoConnection.Ctx, filter).Decode(&userInfo)
 	if err != nil {
@@ -80,14 +83,16 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var (
-		err      error
-		userInfo User
-		uid      string
-		col      *mongo.Collection
+		err           error
+		userInfo      User
+		uid           string
+		col           *mongo.Collection
+		replace_Error *mongo.SingleResult
+		filter        primitive.D
 	)
 
 	uid = mux.Vars(r)["uid"]
-	filter := bson.D{{Key: "uid", Value: uid}}
+	filter = bson.D{{Key: "uid", Value: uid}}
 	col = MongoConnection.Client.Database(consts.DATABASE).Collection(consts.UserCollection)
 	err = col.FindOne(MongoConnection.Ctx, filter).Decode(&userInfo)
 	if err != nil {
@@ -140,10 +145,10 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if bodyUser.Address.Country != "" {
 		userInfo.Address.Country = bodyUser.Address.Country
 	}
-	x := col.FindOneAndReplace(
+	replace_Error = col.FindOneAndReplace(
 		MongoConnection.Ctx, filter, userInfo,
 	)
-	if x.Err() != nil {
+	if replace_Error.Err() != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 	w.Write([]byte("Updated user"))

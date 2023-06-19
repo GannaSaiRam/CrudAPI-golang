@@ -74,21 +74,24 @@ func (p *ProductService) Login(ctx context.Context, loginreq *grpcapi.LoginReq) 
 }
 
 func (p *ProductService) InsertProduct(ctx context.Context, insertProduct *grpcapi.ProductMessage) (*grpcapi.UidParam, error) {
-	if err := commonProdCrud(insertProduct); err != nil {
+	var err error
+	if err = commonProdCrud(insertProduct); err != nil {
 		return nil, err
 	}
 	return &grpcapi.UidParam{Uid: insertProduct.Uid}, nil
 }
 
 func (p *ProductService) UpdateProduct(ctx context.Context, updateProduct *grpcapi.ProductMessage) (*grpcapi.UidParam, error) {
-	if err := commonProdCrud(updateProduct); err != nil {
+	var err error
+	if err = commonProdCrud(updateProduct); err != nil {
 		return nil, err
 	}
 	return &grpcapi.UidParam{Uid: updateProduct.Uid}, nil
 }
 
 func (p *ProductService) DeleteProduct(ctx context.Context, deleteProduct *grpcapi.UidParam) (*grpcapi.UidParam, error) {
-	if err := commonProdCrud(deleteProduct); err != nil {
+	var err error
+	if err = commonProdCrud(deleteProduct); err != nil {
 		return nil, err
 	}
 	return &grpcapi.UidParam{Uid: deleteProduct.Uid}, nil

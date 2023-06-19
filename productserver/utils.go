@@ -33,11 +33,16 @@ func Generate(credentials Credentials) (string, error) {
 }
 
 func Verify(tokenString string) (claims *Claims, err error) {
-	token, err := jwt.ParseWithClaims(
+	var (
+		token *jwt.Token
+		ok    bool
+	)
+	token, err = jwt.ParseWithClaims(
 		tokenString,
 		&Claims{},
 		func(t *jwt.Token) (interface{}, error) {
-			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			var ok bool
+			if _, ok = t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("method doesn't match")
 			}
 			return jwtKey, nil
@@ -46,7 +51,7 @@ func Verify(tokenString string) (claims *Claims, err error) {
 	if err != nil {
 		return claims, fmt.Errorf("invalid token: %v", err)
 	}
-	claims, ok := token.Claims.(*Claims)
+	claims, ok = token.Claims.(*Claims)
 	if !ok {
 		return claims, fmt.Errorf("invalid token claims")
 	}

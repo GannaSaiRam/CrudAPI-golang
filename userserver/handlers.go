@@ -362,9 +362,11 @@ func Get(w http.ResponseWriter, r *http.Request) {
 
 func Update(w http.ResponseWriter, r *http.Request) {
 	var (
-		err error
-		uid string
-		res *http.Response
+		err        error
+		uid        string
+		res        *http.Response
+		req        *http.Request
+		requestURL string
 	)
 
 	_, err = checkValid(w, r)
@@ -378,8 +380,8 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestURL := fmt.Sprintf("http://%v/update/%v", MongoServerAddress, uid)
-	req, err := http.NewRequest(http.MethodPut, requestURL, r.Body)
+	requestURL = fmt.Sprintf("http://%v/update/%v", MongoServerAddress, uid)
+	req, err = http.NewRequest(http.MethodPut, requestURL, r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf("client: could not create request: %v\n", err)))

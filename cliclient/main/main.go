@@ -68,14 +68,14 @@ func init() {
 }
 
 func middlewareClientInterceptor(ctx context.Context, method string,
-	req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) (err error) {
 
 	if path.Base(method) != "Login" && accessToken != "" {
 		// adding jwt to interceptor
 		ctx = metadata.AppendToOutgoingContext(ctx, "access_key", accessToken)
 	}
 
-	err := invoker(ctx, method, req, reply, cc, opts...)
+	err = invoker(ctx, method, req, reply, cc, opts...)
 	return err
 }
 
@@ -106,9 +106,14 @@ func main() {
 		return
 	}
 	if login {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
+		var (
+			ctx    context.Context
+			cancel context.CancelFunc
+			out    *grpcapi.LoginRes
+		)
+		ctx, cancel = context.WithTimeout(context.Background(), time.Hour)
 		defer cancel()
-		out, err := client.Login(ctx, &grpcapi.LoginReq{Username: loginuser, Password: loginpass})
+		out, err = client.Login(ctx, &grpcapi.LoginReq{Username: loginuser, Password: loginpass})
 		if err != nil {
 			log.Println(err)
 			return
