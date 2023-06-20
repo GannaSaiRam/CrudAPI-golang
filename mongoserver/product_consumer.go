@@ -15,15 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/reflect/protoreflect"
 )
-
-type messageGrpcApi interface {
-	*grpcapi.ProductMessage | *grpcapi.UidParam
-	GetUid() string
-	GetAction() grpcapi.Action
-	ProtoReflect() protoreflect.Message
-}
 
 func prodMessageParse(message []byte) (*grpcapi.ProductMessage, error) {
 	var (
@@ -45,20 +37,21 @@ func prodUidParse(message []byte) (*grpcapi.UidParam, error) {
 
 func ProdConsume(kafkaAddr, mongoUri string) {
 	var (
-		err       error
-		err1      error
-		err2      error
-		bckCtx    = context.Background()
-		r         *kafka.Reader
-		signalCtx context.Context
-		stop      context.CancelFunc
-		col       *mongo.Collection
-		msg       kafka.Message
-		kafkaCtx  = context.TODO()
-		bsonobj1  *grpcapi.ProductMessage
-		bsonobj2  *grpcapi.UidParam
-		filter    primitive.D
-		update    primitive.M
+		err          error
+		err1         error
+		err2         error
+		bckCtx       = context.Background()
+		r            *kafka.Reader
+		signalCtx    context.Context
+		stop         context.CancelFunc
+		col          *mongo.Collection
+		msg          kafka.Message
+		kafkaCtx     = context.TODO()
+		bsonobj1     *grpcapi.ProductMessage
+		bsonobj2     *grpcapi.UidParam
+		filter       primitive.D
+		update       primitive.M
+		updateAsDict primitive.D
 	)
 	r = kafka.NewReader(kafka.ReaderConfig{
 		Brokers: strings.Split(kafkaAddr, ","),
@@ -111,6 +104,25 @@ func ProdConsume(kafkaAddr, mongoUri string) {
 			if err != nil {
 				log.Printf("Insertion failed: %v", err)
 			}
+			filter = bson.D{{Key: "uid", Value: bsonobj1.GetUid()}}
+			updateAsDict = bson.D{{
+				Key: "$set",
+				Value: bson.D{{
+					Key: "productInformation",
+					Value: bson.D{{
+						Key: "$function",
+						Value: bson.M{
+							"lang": "js",
+							"args": []string{"$productinfo"},
+							"body": "function(infoStr) { return JSON.parse(infoStr); }",
+						},
+					}},
+				}},
+			}}
+			_, err = col.UpdateOne(MongoConnection.Ctx, filter, mongo.Pipeline{updateAsDict})
+			if err != nil {
+				log.Println("Converting productinfo to json object failed")
+			}
 		} else if bsonobj1 != nil && bsonobj1.GetAction() == grpcapi.Action_UPDATE {
 			filter = bson.D{{Key: "uid", Value: bsonobj1.GetUid()}}
 			update = bson.M{
@@ -122,6 +134,24 @@ func ProdConsume(kafkaAddr, mongoUri string) {
 			_, err = col.UpdateOne(MongoConnection.Ctx, filter, update)
 			if err != nil {
 				log.Printf("Updation failed: %v", err)
+			}
+			updateAsDict = bson.D{{
+				Key: "$set",
+				Value: bson.D{{
+					Key: "productInformation",
+					Value: bson.D{{
+						Key: "$function",
+						Value: bson.M{
+							"lang": "js",
+							"args": []string{"$productinfo"},
+							"body": "function(infoStr) { return JSON.parse(infoStr); }",
+						},
+					}},
+				}},
+			}}
+			_, err = col.UpdateOne(MongoConnection.Ctx, filter, mongo.Pipeline{updateAsDict})
+			if err != nil {
+				log.Println("Converting productinfo to json object failed")
 			}
 		} else if bsonobj2 != nil && bsonobj2.Action == grpcapi.Action_DELETE {
 			filter = bson.D{{Key: "uid", Value: bsonobj2.GetUid()}}

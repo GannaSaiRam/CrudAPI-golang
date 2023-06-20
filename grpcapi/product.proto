@@ -15,6 +15,7 @@ service ProductService {
 message ProductMessage {
     string uid = 1;
     Address source = 2;
-    bytes productInfo = 3;
+    string productInfo = 3;
     Action action = 4;
 }
+

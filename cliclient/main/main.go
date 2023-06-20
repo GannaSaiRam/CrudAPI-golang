@@ -128,7 +128,7 @@ func main() {
 		// Age:         int64(age),
 		// Height:      float32(height),
 		// Email:       email,
-		ProductInfo: []byte(data),
+		ProductInfo: data,
 		Source: &grpcapi.Address{
 			Addressline1: addressline1,
 			Addressline2: addressline2,
