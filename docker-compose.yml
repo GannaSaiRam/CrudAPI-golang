@@ -76,7 +76,7 @@ services:
     restart: on-failure
     depends_on:
       - mongodb
-      - kowl
+      - kafka
     # environment:
     #   - dport=9000
     env_file:
@@ -93,7 +93,7 @@ services:
       - "${USERSERVER_PORT}:${USERSERVER_PORT}"
       - "${USERSERVER_GRPC}:${USERSERVER_GRPC}"
     depends_on:
-      - kowl
+      - kafka
       - mongoserver
     # environment:
     #   - dmongo_address=service_mongo_server:9000
@@ -112,8 +112,9 @@ services:
       - "${PRODUCTSERVER_PORT}:${PRODUCTSERVER_PORT}"
       - "${PRODUCTSERVER_GRPC}:${PRODUCTSERVER_GRPC}"
     depends_on:
-      - kowl
+      - kafka
       - mongoserver
+      - userserver
     # environment:
     #   - dmongo_address=service_mongo_server:9000
     #   - dport=8000
